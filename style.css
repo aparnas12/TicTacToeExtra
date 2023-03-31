@@ -1,0 +1,116 @@
+@import url('https://fonts.googleapis.com/css?family=Material+Icons|IM+Fell+Great+Primer+SC|Dosis|Open+Sans+Condensed:300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Quantico&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+#board {
+  width: 450px;
+  height: 450px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+
+}
+
+.cell {
+  flex: 0 0 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  font-size: 50px;
+  color: red;
+  font-family: 'Dosis', sans-serif;
+}
+
+/* This rule gives us the vertical grid lines */
+.cell:nth-child(3n+2) {
+  border-left: 3px solid black;
+  border-right: 3px solid black;
+}
+
+/* This rule gives us the horizontal grid lines */
+.cell:nth-child(n+4):nth-child(-n+6) {
+  border-top: 3px solid black;
+  border-bottom: 3px solid black;
+}
+
+input {
+  font-size: 20px;
+  padding: 10px;
+  margin: 10px;
+  text-align: center;
+  font-family: 'Quantico', sans-serif;
+}
+
+#restart-button,
+#start-button {
+  border: 2px solid red;
+  background-color: white;
+
+}
+
+#player1Name,
+#player2Name{
+  border: 2px solid blue;
+  background-color: white;
+}
+
+.players-input {
+  display: flex;
+  flex-direction: row;
+  padding: 10px;
+  margin: 10px;
+  justify-content: left;
+  align-items:center;
+
+}
+
+.players-input p {
+  color: blue;
+  font-size: 30px;
+  padding: 10px;
+  margin: 10px;
+  text-align: left;
+  font-family: 'Quantico', sans-serif;
+}
+
+h1 {
+ 
+  font-family: 'Quantico', sans-serif;
+  color: blue;
+}
+
+h2 {
+  padding: 10px;
+  margin: 10px;
+  font-family: 'Quantico', sans-serif;
+  color: red;
+}
+
+.div-heading-area {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  padding: 10px;
+  margin: 10px;
+}
+
+ label {
+  font-family: 'Quantico', sans-serif;
+  color: blue;
+  font-size: 20px;
+}
+
+#check-computer{
+  outline: 2px solid red;
+}

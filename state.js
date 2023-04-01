@@ -1,4 +1,5 @@
 window.gameState = {
+    isCompPlaying:false,
     gameStarted : false, //is set to true when clicked on Start
     endGame:false, //is true when the board is full or there is a win on the board
     currentTurn: '', //is randomly gen by the comp and holds an X or O. Toggles between the 2 depending on what was clicked on the board 
@@ -22,6 +23,7 @@ window.gameState = {
     markX: 'X', 
     markO:'O',
   clearBoard: function () {  //clears the state for  a new game to start
+      isCompPlaying = false;
       this.player1Name = '',
       this.player2Name = '',
       this.player1XO ='',

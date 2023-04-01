@@ -178,9 +178,16 @@ function onBoardClick(event,state)
 
     //store the win status in the state object 
     state.endGame = win;
-    
+    console.log("player won?", win);
     //update the game state with the latest changes on the board 
     updateBoardObject(state);
+    
+
+    if(state.isCompPlaying  && !win)
+    {
+     
+      playCompTurn();
+    }
    
 }
 
@@ -209,12 +216,24 @@ function onStartGameButtonClick()
     const inputPlayer1 = document.querySelector("#player1Name");
     const inputPlayer2 = document.querySelector("#player2Name");
 
-    //if either of the users have not entered their names do not proceed and prompt for names
-    if (!(inputPlayer1.value.length)|| !(inputPlayer2.value.length) ){
-      updateH2Message(`Please enter both player names to start playing!`);  
-      return;
+    const isCompPlaying = onCompPlayerChecked();
+    state.isCompPlaying = isCompPlaying;
+
+    // dont start game till you have a player name if  computer is the first player
+    if(isCompPlaying && !(inputPlayer1.value.length)){
+      updateH2Message(`Please enter a player name to start playing!`); 
+        return;
     }
     
+    if(!isCompPlaying){
+      
+       //if either of the users have not entered their names do not proceed and prompt for names
+      if (!(inputPlayer1.value.length)|| !(inputPlayer2.value.length) ){
+        updateH2Message(`Please enter both player names to start playing!`);  
+        return;
+      }
+    }
+
     state.player1Name = inputPlayer1.value;
     state.player2Name = inputPlayer2.value;
     
@@ -230,11 +249,11 @@ function onStartGameButtonClick()
     // assign the other player what has not been assigned to player 1 . We are making the assumption this is always  a X or an O only.
     state.player1XO === 'X' ? state.player2XO = 'O': state.player2XO = 'X';
 
-    //display the player name and prompt to start game
-    if(state.player1Name && state.player2Name)
+    //display both players name if computer not playing and prompt to start game
+    if(!state.isCompPlaying && state.player1Name && state.player2Name) 
     updateH2Message(`Welcome ${convertToTitleCase(state.player1Name)} and ${convertToTitleCase(state.player2Name)} to a fun game of Tic Tac Toe.`);
-    else
-    updateH2Message('Welcome to a fun game of Tic Tac Toe');
+    else if (state.isCompPlaying && state.player1Name)
+    updateH2Message(`Welcome ${convertToTitleCase(state.player1Name)} to a fun game of Tic Tac Toe.`);
 
     //once start button has been clicked it gets replaced by restart button etc
     deleteAllChildNodes(playerInputArea);
@@ -244,9 +263,84 @@ function onStartGameButtonClick()
     const  msgDiv = document.getElementById('message');
    
      msgDiv.innerHTML = `${state.currentTurn} begins the game. Player ${convertToTitleCase(state.player1Name)} gets ${state.player1XO}. Player ${convertToTitleCase(state.player2Name)} gets ${state.player2XO}. `;
+
+     //if the computer is already playing then mark the board for the comp
+     if(state.isCompPlaying && state.currentTurn === state.player2XO)
+     {
+      let boardArray = getBoardArray();
+       const compTurn = Math.floor((Math.random() * 9));
+       boardArray[compTurn].innerText= state.currentTurn;
+       updateBoardObject(state);
+      state.currentTurn === 'X' ? state.currentTurn = state.markO : state.currentTurn = state.markX ;
+
+     }
 }
 
 /********* Helper Functions*********/
+
+function playCompTurn()
+{
+  let boardArray = state.board;
+ 
+  let emptyBoardCells = [];
+  console.log(boardArray.length);
+
+  for (let i = 0; i < boardArray.length ; i++){
+
+    console.log(i, " is marked as " ,boardArray[i].mark);
+    if(boardArray[i].mark === '')
+    {
+      emptyBoardCells.push(i);
+    }  
+ }
+
+ console.log("how many empty spots ", emptyBoardCells.length);
+ const randomIdx = Math.floor((Math.random() * emptyBoardCells.length ));
+ let newSpotForComp = emptyBoardCells[randomIdx];
+ console.log("computer marked ", newSpotForComp);
+ let cellsArray = getBoardArray();
+ cellsArray[newSpotForComp].innerText= state.currentTurn;
+ console.log(newSpotForComp, cellsArray[newSpotForComp].innerText);
+ updateBoardObject(state);
+  
+  const winArrays = getPossibleWinArraysforIndex(newSpotForComp.toString());
+   console.log(winArrays.length);
+    let win = checkForWin(winArrays,newSpotForComp.toString());
+
+    if(win){
+
+       updateH2Message(`The Computer won this round!`);     
+       
+    }
+    else
+    {   
+        updateH2Message("");
+    }
+
+    //if comp has already not won the game,  check if board is full
+    if (!win) {
+        
+        win = checkBoardFull(getBoardArray());
+        if(win)
+        {
+            updateH2Message(`Game over! Sorry, there are no more moves left. Restart the game for another round!`);
+            
+        }
+        else
+        {
+            updateH2Message("");
+        }
+    }
+
+    //store the win status in the state object 
+    state.endGame = win
+    //switch the current turn now 
+
+    state.currentTurn === 'X' ? state.currentTurn = state.markO : state.currentTurn = state.markX ;
+    
+    const  msgDiv = document.getElementById('message');
+    msgDiv.innerText ="";
+}
 
 //helper function to check if board is full and no more moves left
 function checkBoardFull(currBoard){
@@ -281,12 +375,13 @@ function updateBoardObject(currState)
 
 //this function should return a subset of strings that contains the index sent in. for example if index sent is 2 the return '0,1,2' '2,5,8' and '2,4,6'
 function getPossibleWinArraysforIndex(index) {
- 
+    console.log("get possible arrays for index ", index);
     let subsetWinArrays = [];
     for(let i = 0; i < winningCombos.length; i++)
     {
       
         const arr = winningCombos[i].split(",");
+        console.log("winning", arr);
         if(arr.includes(index)){
             subsetWinArrays.push(winningCombos[i]);
         }  
@@ -338,12 +433,28 @@ function getPossibleWinArraysforIndex(index) {
 function onCompPlayerChecked()
 {
    const compCheckBox = document.getElementById('check-computer');
+   const inputPlayer2 = document.querySelector("#player2Name");
    if(compCheckBox)
    {
-     if (compCheckBox.checked) console.log("checked");
-     else console.log('uchecked');
+     if (compCheckBox.checked)
+     {
+      
+        inputPlayer2.value = "Computer";
+        inputPlayer2.disabled = true;
+        updateH2Message("Welcome! Please enter your name below and click Start Game to begin.");
+        console.log("checked");
+        return true;
+     } 
+     else 
+     {
+        console.log('uchecked');
+        //inputPlayer2.value = "";
+        inputPlayer2.disabled = false;
+        updateH2Message("Welcome! Please enter your names below and click Start Game to begin.");
+        return false;
+    }
    }
-
+   return false;
 }
 // **************  create the two main  containers for all the dynamically created elements and let them be globally available
 const boardDiv = document.createElement('div');

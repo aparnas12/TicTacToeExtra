@@ -29,17 +29,16 @@ body.appendChild(h2PlayerMessage);
 //Create and render Board DIV element below
 function renderBoard(state){
                
-        for(let i = 0; i < state.board.length; i++)
-        {
-           
-            div = document.createElement('div');
-            div.className = 'cell';
-            div.dataset.index = i;
-            div.innerText =  state.board[i].mark;
-            boardDiv.appendChild(div);
-        }
+  for(let i = 0; i < state.board.length; i++)
+  {
 
-        body.appendChild(boardDiv);
+       div = document.createElement('div');
+       div.className = 'cell';
+       div.dataset.index = i;
+       div.innerText =  state.board[i].mark;
+       boardDiv.appendChild(div);
+  } 
+  body.appendChild(boardDiv);
 }
 
 // Create  Player DIV  section with two inputs and a start button below
@@ -71,7 +70,7 @@ function renderPlayer(){
     startBtn.value = 'Start Game';
     startBtn.id= 'start-button'
 
-     playerDiv.appendChild(labelComp);
+    playerDiv.appendChild(labelComp);
     playerDiv.appendChild(player1Elem);
     playerDiv.appendChild(player2Elem);
    
@@ -122,7 +121,6 @@ function onBoardClick(event,state)
 
     //if the game has a winner or all spots are marked the game has ended and user cannot click on the board anymore
     if(state.endGame){ return} ;
-
   
     //get the index of the cell that was clicked and save it for future use?
     state.clickedCellIndex = event.target.dataset.index;
@@ -139,10 +137,14 @@ function onBoardClick(event,state)
     //display whose turn it is next  and whether its O or X that up next
     let displayNextPlayerName =  state.player1XO === state.currentTurn? state.player1Name : state.player2Name;
   
-    const  msgDiv = document.getElementById('message');
-    if(msgDiv)
-    {
+    //display whose turn it is next  and whether its O or X that up next if computer is not playing 
+    const msgDiv = document.getElementById('message');
+    if (!state.isCompPlaying && msgDiv) {
+
+      let displayNextPlayerName = state.player1XO === state.currentTurn ? state.player1Name : state.player2Name; 
+
         msgDiv.innerText = `${state.currentTurn} goes next. It is your turn ${convertToTitleCase(displayNextPlayerName)}`;
+
     }
 
     //get a subset of possible winning combinations
@@ -178,15 +180,16 @@ function onBoardClick(event,state)
 
     //store the win status in the state object 
     state.endGame = win;
-    console.log("player won?", win);
+   
     //update the game state with the latest changes on the board 
     updateBoardObject(state);
     
 
     if(state.isCompPlaying  && !win)
     {
-     
-      playCompTurn();
+      msgDiv.innerText ="";
+      //playCompTurn();
+      setTimeout(playCompTurn,500);
     }
    
 }
@@ -281,7 +284,7 @@ function onStartGameButtonClick()
 function playCompTurn()
 {
   let boardArray = state.board;
- 
+  const  msgDiv = document.getElementById('message');
   let emptyBoardCells = [];
   console.log(boardArray.length);
 
@@ -294,13 +297,13 @@ function playCompTurn()
     }  
  }
 
- console.log("how many empty spots ", emptyBoardCells.length);
+
  const randomIdx = Math.floor((Math.random() * emptyBoardCells.length ));
  let newSpotForComp = emptyBoardCells[randomIdx];
- console.log("computer marked ", newSpotForComp);
+
  let cellsArray = getBoardArray();
  cellsArray[newSpotForComp].innerText= state.currentTurn;
- console.log(newSpotForComp, cellsArray[newSpotForComp].innerText);
+
  updateBoardObject(state);
   
   const winArrays = getPossibleWinArraysforIndex(newSpotForComp.toString());
@@ -309,8 +312,8 @@ function playCompTurn()
 
     if(win){
 
-       updateH2Message(`The Computer won this round!`);     
-       
+       updateH2Message(`The Computer won this round.Try again!`);     
+       msgDiv.innerText = "";
     }
     else
     {   
@@ -324,7 +327,7 @@ function playCompTurn()
         if(win)
         {
             updateH2Message(`Game over! Sorry, there are no more moves left. Restart the game for another round!`);
-            
+            msgDiv.innerText = "";
         }
         else
         {
@@ -334,12 +337,12 @@ function playCompTurn()
 
     //store the win status in the state object 
     state.endGame = win
-    //switch the current turn now 
 
-    state.currentTurn === 'X' ? state.currentTurn = state.markO : state.currentTurn = state.markX ;
+    //switch the current turn now 
+    state.currentTurn === 'X' ? state.currentTurn = state.markO : state.currentTurn = state.markX 
+    //inform player its their turn
+    if(!win) msgDiv.innerText = `It is your turn ${convertToTitleCase(state.player1Name)}.${state.currentTurn} marks the spot. `;
     
-    const  msgDiv = document.getElementById('message');
-    msgDiv.innerText ="";
 }
 
 //helper function to check if board is full and no more moves left
@@ -379,7 +382,6 @@ function getPossibleWinArraysforIndex(index) {
     let subsetWinArrays = [];
     for(let i = 0; i < winningCombos.length; i++)
     {
-      
         const arr = winningCombos[i].split(",");
         console.log("winning", arr);
         if(arr.includes(index)){
@@ -442,12 +444,10 @@ function onCompPlayerChecked()
         inputPlayer2.value = "Computer";
         inputPlayer2.disabled = true;
         updateH2Message("Welcome! Please enter your name below and click Start Game to begin.");
-        console.log("checked");
         return true;
      } 
      else 
      {
-        console.log('uchecked');
         //inputPlayer2.value = "";
         inputPlayer2.disabled = false;
         updateH2Message("Welcome! Please enter your names below and click Start Game to begin.");
@@ -473,8 +473,3 @@ board.addEventListener('click', (event) => {onBoardClick(event,state);});
 
 // globally available playarea variable. I am declaring it here after the playarea is rendered.
 const playerInputArea = document.querySelector('.players-input')
-
-
-
-
-
